@@ -1,0 +1,143 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QR Attendance Scanner</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 25px auto;
+      padding: 16px;
+      background: #f3f6fb;
+      color: #17345f;
+    }
+    .panel {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px #0001;
+    }
+    button, select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      background: #2459a9;
+      color: white;
+      border: 0;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .5; }
+    #reader { margin-top: 16px; width: 100%; }
+    #status { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <div class="panel">
+    <h2>QR Attendance Scanner</h2>
+    <p>Camera test for the Brio 100 webcam.</p>
+
+    <label for="camera">Select camera</label>
+    <select id="camera">
+      <option value="">Loading cameras...</option>
+    </select>
+
+    <div id="reader"></div>
+
+    <button id="start" disabled>Start camera</button>
+    <button id="stop" disabled>Stop camera</button>
+    <p id="status">Preparing camera...</p>
+  </div>
+
+<script>
+  const cameraSelect = document.getElementById('camera');
+  const startButton = document.getElementById('start');
+  const stopButton = document.getElementById('stop');
+  const statusText = document.getElementById('status');
+
+  let scanner = null;
+  let running = false;
+
+  async function loadCameras() {
+    try {
+      if (!window.Html5Qrcode) {
+        throw new Error('QR scanner library did not load.');
+      }
+
+      const cameras = await Html5Qrcode.getCameras();
+      cameraSelect.replaceChildren();
+
+      if (!cameras.length) throw new Error('No cameras detected.');
+
+      cameras.forEach((camera, index) => {
+        const option = document.createElement('option');
+        option.value = camera.id;
+        option.textContent = camera.label || `Camera ${index + 1}`;
+        cameraSelect.appendChild(option);
+      });
+
+      const brio = cameras.find(camera => /brio/i.test(camera.label));
+      if (brio) cameraSelect.value = brio.id;
+
+      startButton.disabled = false;
+      statusText.textContent = 'Camera detected. Click Start camera.';
+    } catch (error) {
+      statusText.textContent = 'Camera setup failed: ' + error.message;
+    }
+  }
+
+  async function startCamera() {
+    if (running) return;
+
+    try {
+      startButton.disabled = true;
+      scanner = new Html5Qrcode('reader');
+
+      await scanner.start(
+        cameraSelect.value,
+        { fps: 10, qrbox: { width: 240, height: 240 } },
+        decodedText => {
+          statusText.textContent = 'QR detected: ' + decodedText;
+        },
+        () => {}
+      );
+
+      running = true;
+      stopButton.disabled = false;
+      statusText.textContent = 'Camera active. Scan a QR code to test.';
+    } catch (error) {
+      scanner = null;
+      startButton.disabled = false;
+      statusText.textContent = 'Camera failed: ' + error.message;
+    }
+  }
+
+  async function stopCamera() {
+    try {
+      if (scanner && running) await scanner.stop();
+      if (scanner) await scanner.clear();
+    } catch (error) {
+      console.error(error);
+    }
+
+    scanner = null;
+    running = false;
+    startButton.disabled = false;
+    stopButton.disabled = true;
+    statusText.textContent = 'Camera stopped.';
+  }
+
+  startButton.addEventListener('click', startCamera);
+  stopButton.addEventListener('click', stopCamera);
+
+  loadCameras();
+</script>
+</body>
+</html>
