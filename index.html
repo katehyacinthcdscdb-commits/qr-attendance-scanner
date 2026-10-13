@@ -64,9 +64,15 @@
   </style>
 </head>
 <body>
-  <iframe id="appsScriptBridge" title="Attendance service"
-    src="https://script.google.com/macros/s/AKfycbxQUJ201iig1SRoeDYnwb_9AB-eHY9B3ubLBLUa-sVBAqv5B7GQ2AseQ782WaYk85CZLA/exec?page=bridge"
-    style="display:none" aria-hidden="true"></iframe>
+  
+<iframe
+  id="appsScriptBridge"
+  title="Attendance service"
+  src="https://script.google.com/macros/s/AKfycbxQUJ201iig1SRoeDYnwb_9AB-eHY9B3ubLBLUa-sVBAqv5B7GQ2AseQ782WaYk85CZLA/exec?page=bridge"
+  style="display:none"
+  aria-hidden="true">
+</iframe>
+
   <header class="topbar">
     <div><h1>QR Attendance System</h1><small id="userLabel">Checking access…</small></div>
     <div style="display:flex;gap:8px;align-items:center"><button id="refreshBtn" class="secondary hidden" onclick="reloadData()">Refresh</button><button id="logoutBtn" class="secondary hidden" onclick="doLogout()">Log out</button></div>
