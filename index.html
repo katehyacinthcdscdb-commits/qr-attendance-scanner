@@ -216,51 +216,43 @@
     document.getElementById('loginPin').value = '';
   }
 
-function submitLogin(event) {
-  event.preventDefault(); // Stop standard form reloading behaviors
-  
-  const emailVal = document.getElementById("loginEmail").value;
-  const pinVal = document.getElementById("loginPin").value;
-  
-  // Update this to your real Google Apps Script web application execution endpoint
-  const GOOGLE_SCRIPT_API = "https://script.google.com/macros/s/AKfycbwUtMbXqVzvC5KGxosv3pOlOyiOTR-tH_AZ1vI7N83Z2l3E4MVC7u0w7GgLIUrrm6c7/exec";
-  
-  setNotice('loginNotice', 'Verifying credentials...', 'info');
-  
-  // Forward authorization verification parameters securely over direct API dispatches
-  fetch(GOOGLE_SCRIPT_API, {
-    method: "POST",
-    mode: "cors",
-    headers: {
-      "Content-Type": "text/plain;charset=utf-8"
-    },
-    body: JSON.stringify({
-      action: "staffLogin",
-      email: emailVal,
-      pin: pinVal
-    })
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.authenticated) {
-      setNotice('loginNotice', 'Access approved!', 'ok');
-      
-      // Hide the registration panel structure and expose your app system dashboard
-      document.getElementById("loginPanel").classList.add("hidden");
-      document.getElementById("dashboard").classList.remove("hidden");
-      document.getElementById("userLabel").innerText = "Logged in as: " + emailVal;
-      
-      // If you are rendering logging tables dynamically, trigger that procedure here
-    } else {
-      setNotice('loginNotice', 'Authentication failed: ' + data.message, 'err');
-    }
-  })
-  .catch(error => {
-    console.error("Login communication network failure:", error);
-    setNotice('loginNotice', 'System offline: Unable to reach validation database.', 'err');
-  });
-}
+async function submitLogin(event) {
+  event.preventDefault();
 
+  const emailVal = document.getElementById('loginEmail').value.trim();
+  const pinVal = document.getElementById('loginPin').value.trim();
+  const btn = document.getElementById('loginBtn');
+
+  btn.disabled = true;
+  setNotice('loginNotice', 'Verifying credentials...', 'info');
+
+  try {
+    const result = await callServer('login', emailVal, pinVal);
+
+    if (!result || !result.token || !result.user) {
+      throw new Error('Login response is missing the session token or user details.');
+    }
+
+    authToken = result.token;
+
+    document.getElementById('loginPanel').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
+
+    await reloadData();
+
+    setNotice('loginNotice', 'Login successful.', 'ok');
+  } catch (error) {
+    authToken = '';
+    console.error('Login failed:', error);
+    setNotice(
+      'loginNotice',
+      error.message || 'Unable to log in. Please try again.',
+      'err'
+    );
+  } finally {
+    btn.disabled = false;
+  }
+}
 
   async function doLogout() {
     await stopScanner();
