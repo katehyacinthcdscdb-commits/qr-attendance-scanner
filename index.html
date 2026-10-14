@@ -68,6 +68,15 @@
     <div><h1>QR Attendance System</h1><small id="userLabel">Checking access…</small></div>
     <div style="display:flex;gap:8px;align-items:center"><button id="refreshBtn" class="secondary hidden" onclick="reloadData()">Refresh</button><button id="logoutBtn" class="secondary hidden" onclick="doLogout()">Log out</button></div>
   </header>
+  
+<iframe
+  id="appsScriptBridge"
+  src="https://script.google.com/macros/s/AKfycbwUtMbXqVzvC5KGxosv3pOlOyiOTR-tH_AZ1vI7N83Z2l3E4MVC7u0w7GgLIUrrm6c7/exec"
+  title="Attendance service bridge"
+  style="display:none"
+  aria-hidden="true">
+</iframe>
+   
   <main class="wrap">
     <div id="globalNotice" class="notice"></div>
     <section id="loginPanel" class="card login-card">
