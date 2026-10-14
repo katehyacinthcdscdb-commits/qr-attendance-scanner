@@ -64,15 +64,6 @@
   </style>
 </head>
 <body>
-  
-<iframe
-  id="appsScriptBridge"
-  title="Attendance service"
-  src="https://script.google.com/macros/s/AKfycbxQUJ201iig1SRoeDYnwb_9AB-eHY9B3ubLBLUa-sVBAqv5B7GQ2AseQ782WaYk85CZLA/exec?page=bridge"
-  style="display:none"
-  aria-hidden="true">
-</iframe>
-
   <header class="topbar">
     <div><h1>QR Attendance System</h1><small id="userLabel">Checking access…</small></div>
     <div style="display:flex;gap:8px;align-items:center"><button id="refreshBtn" class="secondary hidden" onclick="reloadData()">Refresh</button><button id="logoutBtn" class="secondary hidden" onclick="doLogout()">Log out</button></div>
@@ -358,13 +349,17 @@ async function startScanner() {
     if (!window.isSecureContext) {
       throw new Error('Camera access requires HTTPS. Open the GitHub Pages website.');
     }
-    scanner = new Html5Qrcode('reader');
-    await scanner.start(
-      { facingMode: 'environment' },
-      { fps: 10, qrbox: { width: 240, height: 240 }, aspectRatio: 1.0 },
-      onQrDecoded,
-      () => {}
-    );
+          // ... your existing code on lines 352-355
+      scanner = new Html5Qrcode("reader");
+      await scanner.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 240, height: 240 }, aspectRatio: 1.0 },
+        (decodedText) => {
+          // Send scanned data directly to Google Sheets API
+          sendAttendanceToGoogleSheets(decodedText);
+        },
+        () => {}
+      );
     scannerRunning = true;
     startBtn.disabled = true;
     document.getElementById('stopBtn').disabled = false;
@@ -590,6 +585,35 @@ async function startScanner() {
       showGlobal(email + ' has been ' + (active ? 'activated' : 'deactivated') + '.', 'ok');
       await loadAccounts();
     } catch (e) { showGlobal(e.message, 'err'); }
+  }
+  function sendAttendanceToGoogleSheets(studentIdPayload) {
+    const GOOGLE_SCRIPT_API = "https://script.google.com/macros/s/AKfycbwUtMbXqVzvC5KGxosv3pOlOyiOTR-tH_AZ1vI7N83Z2l3E4MVC7u0w7GgLIUrrm6c7/exec";
+    
+    // Find your active transaction type button element state
+    const activeBtn = document.querySelector(".transaction.active");
+    const selectedTransaction = activeBtn ? activeBtn.getAttribute("data-value") : "Entrance";
+  
+    setNotice('scanNotice', 'Logging attendance data to server...', 'info');
+  
+    fetch(GOOGLE_SCRIPT_API, {
+      method: "POST",
+      mode: "cors",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8" // Bypasses explicit CORS pre-flight checks in browser
+      },
+      body: JSON.stringify({
+        studentId: studentIdPayload,
+        transactionType: selectedTransaction
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      setNotice('scanNotice', 'Attendance logged successfully for: ' + studentIdPayload, 'ok');
+    })
+    .catch(error => {
+      console.error("API error:", error);
+      setNotice('scanNotice', 'Network breakdown: Failed to save entry to database.', 'err');
+    });
   }
 
 </script>
