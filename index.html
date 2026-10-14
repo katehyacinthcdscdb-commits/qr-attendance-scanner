@@ -207,29 +207,51 @@
     document.getElementById('loginPin').value = '';
   }
 
-  async function submitLogin(event) {
-    event.preventDefault();
-    const btn = document.getElementById('loginBtn');
-    btn.disabled = true;
-    setNotice('loginNotice', 'Signing in…', 'info');
-    try {
-      const result = await callServer('login',
-        document.getElementById('loginEmail').value,
-        document.getElementById('loginPin').value);
-      authToken = result.token;
-      document.getElementById('loginPin').value = '';
-      document.getElementById('loginPanel').classList.add('hidden');
-      document.getElementById('dashboard').classList.remove('hidden');
-      document.getElementById('refreshBtn').classList.remove('hidden');
-      document.getElementById('logoutBtn').classList.remove('hidden');
-      setNotice('loginNotice', '', 'info');
-      await reloadData();
-    } catch (e) {
-      setNotice('loginNotice', e.message || String(e), 'err');
-    } finally {
-      btn.disabled = false;
+function submitLogin(event) {
+  event.preventDefault(); // Stop standard form reloading behaviors
+  
+  const emailVal = document.getElementById("loginEmail").value;
+  const pinVal = document.getElementById("loginPin").value;
+  
+  // Update this to your real Google Apps Script web application execution endpoint
+  const GOOGLE_SCRIPT_API = "https://google.com";
+  
+  setNotice('loginNotice', 'Verifying credentials...', 'info');
+  
+  // Forward authorization verification parameters securely over direct API dispatches
+  fetch(GOOGLE_SCRIPT_API, {
+    method: "POST",
+    mode: "cors",
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8"
+    },
+    body: JSON.stringify({
+      action: "staffLogin",
+      email: emailVal,
+      pin: pinVal
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.authenticated) {
+      setNotice('loginNotice', 'Access approved!', 'ok');
+      
+      // Hide the registration panel structure and expose your app system dashboard
+      document.getElementById("loginPanel").classList.add("hidden");
+      document.getElementById("dashboard").classList.remove("hidden");
+      document.getElementById("userLabel").innerText = "Logged in as: " + emailVal;
+      
+      // If you are rendering logging tables dynamically, trigger that procedure here
+    } else {
+      setNotice('loginNotice', 'Authentication failed: ' + data.message, 'err');
     }
-  }
+  })
+  .catch(error => {
+    console.error("Login communication network failure:", error);
+    setNotice('loginNotice', 'System offline: Unable to reach validation database.', 'err');
+  });
+}
+
 
   async function doLogout() {
     await stopScanner();
