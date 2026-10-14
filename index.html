@@ -381,8 +381,8 @@ async function startScanner() {
         (decodedText) => {
           onQrDecoded(decodedText);
         },
-        },
         () => {}
+
       );
     scannerRunning = true;
     startBtn.disabled = true;
