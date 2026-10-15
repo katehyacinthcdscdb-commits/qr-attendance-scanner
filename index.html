@@ -83,7 +83,12 @@
             console.log('QR OPENER CHECK:', !!window.opener, window.opener?.closed);
 
             try {
-              await scanner.stop();
+              try {
+                await scanner.stop();
+              } catch (stopError) {
+                console.warn('Camera already stopped:', stopError.message);
+              }
+            
               scanning = false;
 
               if (!window.opener || window.opener.closed) {
