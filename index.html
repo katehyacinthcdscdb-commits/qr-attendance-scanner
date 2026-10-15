@@ -1,646 +1,137 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <base target="_top">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QR Attendance Scanner</title>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
-    :root { --blue:#2459a9; --blue-light:#e8f2ff; --ink:#172033; --muted:#657085; --line:#dce2ea; --bg:#f4f6fa; --green:#137547; --red:#b42318; }
-    * { box-sizing:border-box; }
-    body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; }
-    .topbar { background:#173b72; color:white; padding:18px max(16px,env(safe-area-inset-left)); display:flex; align-items:center; justify-content:space-between; gap:12px; }
-    .topbar h1 { font-size:19px; margin:0; }
-    .topbar small { opacity:.85; display:block; margin-top:3px; }
-    .wrap { max-width:1100px; margin:0 auto; padding:16px; }
-    .tabs { display:flex; gap:8px; overflow:auto; margin-bottom:14px; }
-    button, input, select { font:inherit; }
-    button { border:0; border-radius:10px; padding:11px 14px; cursor:pointer; font-weight:650; }
-    button:disabled { opacity:.5; cursor:not-allowed; }
-    .tab { background:white; color:#334155; border:1px solid var(--line); white-space:nowrap; }
-    .tab.active { background:var(--blue); color:white; border-color:var(--blue); }
-    .primary { background:var(--blue); color:white; }
-    .secondary { background:white; color:var(--ink); border:1px solid var(--line); }
-    .danger { background:#fff0ef; color:var(--red); border:1px solid #ffd4d0; }
-    .card { background:white; border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:14px; box-shadow:0 2px 8px #17203308; }
-    h2 { font-size:19px; margin:0 0 12px; } h3 { font-size:16px; margin:0 0 10px; }
-    .muted { color:var(--muted); font-size:13px; }
-    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
-    .field { display:flex; flex-direction:column; gap:5px; min-width:0; }
-    label { font-size:13px; color:#4b5565; font-weight:650; }
-    input, select { border:1px solid #cbd3df; border-radius:9px; padding:11px 10px; min-width:0; width:100%; background:white; color:var(--ink); }
-    .transactions { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
-    .transaction { background:#f8fafc; color:#334155; border:1px solid var(--line); min-height:58px; padding:8px 4px; }
-    .transaction.active { background:var(--blue-light); color:var(--blue); border:2px solid var(--blue); }
-    .scanner { max-width:520px; margin:auto; }
-    #reader { width:100%; min-height:100px; overflow:hidden; border-radius:12px; }
-    #reader video { border-radius:12px; }
-    .notice { display:none; border-radius:10px; padding:11px 12px; margin:10px 0; font-size:14px; white-space:pre-wrap; }
-    .notice.show { display:block; } .notice.ok { background:#e9f8ef; color:#11643a; } .notice.err { background:#fff0ef; color:#9f2018; } .notice.info { background:#e8f2ff; color:#214e91; }
-    .student-preview { border:1px solid var(--line); border-radius:12px; padding:14px; margin-top:12px; display:none; }
-    .student-preview.show { display:block; }
-    .kv { display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-bottom:1px solid #eef1f5; } .kv:last-child { border-bottom:0; }
-    .kv span:first-child { color:var(--muted); } .kv span:last-child { font-weight:650; text-align:right; overflow-wrap:anywhere; }
-    .actions { display:flex; gap:8px; margin-top:12px; } .actions button { flex:1; }
-    .table-wrap { overflow:auto; width:100%; }
-    table { width:100%; border-collapse:collapse; font-size:13px; white-space:nowrap; }
-    th,td { text-align:left; padding:10px 9px; border-bottom:1px solid #e8edf3; }
-    th { background:#f8fafc; color:#536075; font-weight:700; position:sticky; top:0; }
-    .status { border-radius:20px; padding:3px 8px; font-size:12px; font-weight:700; }
-    .status.Active { background:#e9f8ef; color:#11643a; } .status.Inactive { background:#fff0ef; color:#9f2018; }
-    .student-form { display:grid; grid-template-columns:2fr 1fr 1fr 1fr auto; gap:8px; align-items:end; }
-    .hidden { display:none !important; }
-    .login-card { max-width:440px; margin:40px auto; }
-    .account-form { display:grid; grid-template-columns:2fr 1fr 1fr 1fr auto; gap:8px; align-items:end; }
-    @media(max-width:650px) { .account-form { grid-template-columns:1fr 1fr; } .account-form .wide { grid-column:1/-1; } }
-    .qr-thumb { width:72px; height:72px; object-fit:contain; }
-    .empty { padding:20px; text-align:center; color:var(--muted); }
-    @media(max-width:650px) {
-      .wrap { padding:10px; } .card { padding:13px; border-radius:13px; }
-      .transactions { grid-template-columns:repeat(2,minmax(0,1fr)); }
-      .grid { grid-template-columns:1fr; } .student-form { grid-template-columns:1fr 1fr; }
-      .student-form .wide { grid-column:1/-1; } .topbar h1 { font-size:17px; }
-      .actions { flex-direction:column; }
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 24px auto;
+      padding: 16px;
+      text-align: center;
+      background: #f5f7fa;
+      color: #222;
     }
+    .panel {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px #0001;
+    }
+    button {
+      padding: 12px 18px;
+      margin: 8px;
+      border: 0;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    #startBtn { background: #1769aa; color: white; }
+    #stopBtn { background: #555; color: white; }
+    #status { margin: 16px 0; overflow-wrap: anywhere; }
+    #reader { width: 100%; margin: 16px auto; }
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <div><h1>QR Attendance System</h1><small id="userLabel">Checking access…</small></div>
-    <div style="display:flex;gap:8px;align-items:center"><button id="refreshBtn" class="secondary hidden" onclick="reloadData()">Refresh</button><button id="logoutBtn" class="secondary hidden" onclick="doLogout()">Log out</button></div>
-  </header>
-  
-<iframe
-  id="appsScriptBridge"
-  src="https://script.google.com/macros/s/AKfycbwUtMbXqVzvC5KGxosv3pOlOyiOTR-tH_AZ1vI7N83Z2l3E4MVC7u0w7GgLIUrrm6c7/exec"
-  title="Attendance service bridge"
-  style="display:none"
-  aria-hidden="true">
-</iframe>
-   
-  <main class="wrap">
-    <div id="globalNotice" class="notice"></div>
-    <section id="loginPanel" class="card login-card">
-      <h2>Staff login</h2>
-      <p class="muted">Sign in using your registered email and six-digit PIN.</p>
-      <form id="loginForm" onsubmit="submitLogin(event)">
-        <div class="field" style="margin-bottom:10px"><label for="loginEmail">Email address</label><input id="loginEmail" type="email" autocomplete="username" required maxlength="200"></div>
-        <div class="field" style="margin-bottom:12px"><label for="loginPin">Six-digit PIN</label><input id="loginPin" type="password" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" autocomplete="current-password" required></div>
-        <button id="loginBtn" class="primary" type="submit" style="width:100%">Log in</button>
-      </form>
-      <div id="loginNotice" class="notice"></div>
-    </section>
-    <div id="dashboard" class="hidden">
-    <nav class="tabs" id="tabs">
-      <button class="tab active" data-tab="scan" onclick="showTab('scan')">Scan Attendance</button>
-      <button class="tab hidden" id="studentsTab" data-tab="students" onclick="showTab('students')">Manage Students</button>
-      <button class="tab hidden" id="logsTab" data-tab="logs" onclick="showTab('logs')">Attendance Logs</button>
-      <button class="tab hidden" id="accountsTab" data-tab="accounts" onclick="showTab('accounts')">Manage Accounts</button>
-    </nav>
+  <div class="panel">
+    <h2>QR Attendance Scanner</h2>
+    <p>Keep your Apps Script attendance dashboard open in the other tab.</p>
 
-    <section id="scanPanel">
-      <div class="card">
-        <h2>1. Select transaction</h2>
-        <p class="muted">Select the transaction before scanning. The selected type stays active until you change it.</p>
-        <div class="transactions" id="transactions">
-          <button class="transaction active" data-value="Entrance" onclick="selectTransaction('Entrance')">Entrance</button>
-          <button class="transaction" data-value="Break-in" onclick="selectTransaction('Break-in')">Break-in</button>
-          <button class="transaction" data-value="Break-out" onclick="selectTransaction('Break-out')">Break-out</button>
-          <button class="transaction" data-value="Exit" onclick="selectTransaction('Exit')">Exit</button>
-        </div>
-      </div>
-      <div class="card scanner">
-        <h2>2. Scan student's QR code</h2>
-        <p class="muted">Allow camera access when prompted. Hold the QR code steady inside the frame.</p>
-        <div id="reader"></div>
-        <div class="actions">
-          <button class="primary" id="startBtn" onclick="startScanner()">Start camera</button>
-          <button class="secondary" id="stopBtn" onclick="stopScanner()" disabled>Stop camera</button>
-        </div>
-        <div id="scanNotice" class="notice"></div>
-        <div id="preview" class="student-preview">
-          <h3>Confirm student details</h3>
-          <div id="studentDetails"></div>
-          <p class="muted" id="confirmTransaction"></p>
-          <div class="actions">
-            <button class="primary" id="confirmBtn" onclick="confirmScan()">Confirm and save</button>
-            <button class="secondary" onclick="clearPreview()">Cancel</button>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <h3>How it works</h3>
-        <p class="muted">Choose a transaction → scan the student's unique QR → verify the displayed details → tap Confirm and save. Attendance is written to the Google Sheet only after confirmation.</p>
-      </div>
-    </section>
+    <div id="status">Ready to start.</div>
+    <button id="startBtn" type="button">Start Camera</button>
+    <button id="stopBtn" type="button">Stop Camera</button>
+    <div id="reader"></div>
+  </div>
 
-    <section id="studentsPanel" class="hidden">
-      <div class="card">
-        <h2>Add student</h2>
-        <form id="studentForm" class="student-form" onsubmit="submitStudent(event)">
-          <div class="field wide"><label for="fullName">Full name *</label><input id="fullName" required maxlength="150" placeholder="Student full name"></div>
-          <div class="field"><label for="course">Course</label><input id="course" maxlength="80" placeholder="BSIT"></div>
-          <div class="field"><label for="yearLevel">Year level</label><input id="yearLevel" maxlength="30" placeholder="1"></div>
-          <div class="field"><label for="section">Section</label><input id="section" maxlength="80" placeholder="A"></div>
-          <button class="primary" type="submit" id="addStudentBtn">Add student</button>
-        </form>
-        <p class="muted">A unique QR token and QR image link will be generated automatically. Print or share each student's QR image securely.</p>
-      </div>
-      <div class="card">
-        <h2>Registered students</h2>
-        <div class="field"><label for="studentSearch">Search students</label><input id="studentSearch" placeholder="Name, ID, course…" oninput="renderStudents()"></div>
-        <div class="table-wrap"><table><thead><tr><th>ID</th><th>Name</th><th>Course / Year / Section</th><th>Status</th><th>QR</th><th>Action</th></tr></thead><tbody id="studentsBody"></tbody></table></div>
-      </div>
-    </section>
+  <script>
+    let scanner = null;
+    let scanning = false;
+    let processing = false;
 
-    <section id="logsPanel" class="hidden">
-      <div class="card">
-        <h2>Attendance logs</h2>
-        <div class="grid">
-          <div class="field"><label for="filterDate">Date</label><input type="date" id="filterDate"></div>
-          <div class="field"><label for="filterTransaction">Transaction</label><select id="filterTransaction"><option value="">All transactions</option><option>Entrance</option><option>Break-in</option><option>Break-out</option><option>Exit</option></select></div>
-          <div class="field"><label for="logSearch">Search</label><input id="logSearch" placeholder="Student ID, name, course, section"></div>
-          <div class="field"><label>&nbsp;</label><button class="primary" onclick="loadLogs()">Apply filters</button></div>
-        </div>
-        <div class="actions">
-          <button class="secondary" onclick="clearLogFilters()">Clear filters</button>
-          <button class="secondary" onclick="exportCsv()">Export filtered CSV</button>
-        </div>
-        <p class="muted" id="logCount"></p>
-        <div class="table-wrap"><table><thead><tr><th>Date</th><th>Time</th><th>Student ID</th><th>Name</th><th>Course</th><th>Transaction</th><th>Facilitator</th></tr></thead><tbody id="logsBody"></tbody></table></div>
-      </div>
-    </section>
+    const statusBox = document.getElementById('status');
 
-    <section id="accountsPanel" class="hidden">
-      <div class="card">
-        <h2>Create account</h2>
-        <p class="muted">Create an Admin or Facilitator account. Share the initial PIN privately with the account holder.</p>
-        <form id="accountForm" class="account-form" onsubmit="submitAccount(event)">
-          <div class="field wide"><label for="accountEmail">Email address *</label><input id="accountEmail" type="email" required maxlength="200" placeholder="staff@example.com"></div>
-          <div class="field"><label for="accountRole">Role</label><select id="accountRole"><option value="Facilitator">Facilitator</option><option value="Admin">Admin</option></select></div>
-          <div class="field"><label for="accountPin">Initial PIN *</label><input id="accountPin" type="password" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" required placeholder="6 digits"></div>
-          <button class="primary" id="createAccountBtn" type="submit">Create</button>
-        </form>
-      </div>
-      <div class="card">
-        <h2>Staff accounts</h2>
-        <p class="muted">Reset a PIN if a user forgets it. Deactivating an account revokes its active sessions.</p>
-        <div class="table-wrap"><table><thead><tr><th>Email</th><th>Role</th><th>Status</th><th>Reset PIN</th><th>Access</th></tr></thead><tbody id="accountsBody"></tbody></table></div>
-      </div>
-    </section>
-    </div>
-  </main>
-
-<script>
-  let appData = null;
-  let selectedTransaction = 'Entrance';
-  let scanner = null;
-  let scannerRunning = false;
-  let currentToken = '';
-  let currentStudent = null;
-  let currentLogs = [];
-  let authToken = '';
-  let accountCache = [];
-
-  document.addEventListener('DOMContentLoaded', initApp);
-
-  function initApp() { showLogin(); }
-
-  function showLogin() {
-    appData = null;
-    authToken = '';
-    document.getElementById('loginPanel').classList.remove('hidden');
-    document.getElementById('dashboard').classList.add('hidden');
-    document.getElementById('refreshBtn').classList.add('hidden');
-    document.getElementById('logoutBtn').classList.add('hidden');
-    document.getElementById('userLabel').textContent = 'Please log in';
-    document.getElementById('loginPin').value = '';
-  }
-
-
-async function submitLogin(event) {
-  event.preventDefault();
-
-  const emailVal = document.getElementById('loginEmail').value.trim();
-  const pinVal = document.getElementById('loginPin').value.trim();
-  const btn = document.getElementById('loginBtn');
-
-  btn.disabled = true;
-  setNotice('loginNotice', 'Verifying credentials...', 'info');
-
-  try {
-    const result = await callServer('login', emailVal, pinVal);
-
-    if (!result || !result.token || !result.user) {
-      throw new Error('Login response is missing the session token or user details.');
+    function setStatus(message) {
+      statusBox.textContent = message;
     }
 
-    authToken = result.token;
+    async function startScanner() {
+      if (scanning) return;
 
-    document.getElementById('loginPanel').classList.add('hidden');
-    document.getElementById('dashboard').classList.remove('hidden');
-
-    await reloadData();
-
-    setNotice('loginNotice', 'Login successful.', 'ok');
-  } catch (error) {
-    authToken = '';
-    console.error('Login failed:', error);
-    setNotice(
-      'loginNotice',
-      error.message || 'Unable to log in. Please try again.',
-      'err'
-    );
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-  async function doLogout() {
-    await stopScanner();
-    const oldToken = authToken;
-    authToken = '';
-    try { if (oldToken) await callServer('logout', oldToken); } catch (e) {}
-    clearPreview();
-    showLogin();
-    setNotice('loginNotice', 'You have been logged out.', 'info');
-  }
-
-  const protectedMethods = new Set([
-    'getAppData', 'lookupStudent', 'confirmAttendance', 'addStudent',
-    'setStudentStatus', 'getAttendance', 'exportAttendanceCsv',
-    'createAccount', 'getAccounts', 'resetUserPin', 'setAccountStatus'
-  ]);
-
-  const bridgeFrame = document.getElementById('appsScriptBridge');
-  const bridgeOrigin = 'https://katehyacinthcdscdb-commits.github.io';
-  const bridgePending = new Map();
-  let bridgeCounter = 0;
-
-  window.addEventListener('message', function(event) {
-    if (event.origin !== 'https://script.google.com' &&
-        event.origin !== 'https://script.googleusercontent.com') return;
-    if (event.source !== bridgeFrame.contentWindow) return;
-    const data = event.data;
-    if (!data || data.channel !== 'QR_ATTENDANCE_BRIDGE' || !data.requestId) return;
-    const pending = bridgePending.get(data.requestId);
-    if (!pending) return;
-    clearTimeout(pending.timer);
-    bridgePending.delete(data.requestId);
-    if (data.ok) pending.resolve(data.result);
-    else pending.reject(new Error(data.error || 'The server request failed.'));
-  });
-
-  function callBridge(method, args) {
-    return new Promise((resolve, reject) => {
-      if (!bridgeFrame || !bridgeFrame.contentWindow) {
-        reject(new Error('Attendance service is not available. Reload this page and try again.'));
+      if (typeof Html5Qrcode === 'undefined') {
+        setStatus('Scanner library failed to load. Refresh this page and try again.');
         return;
       }
-      const requestId = 'req_' + Date.now() + '_' + (++bridgeCounter);
-      const timer = setTimeout(() => {
-        bridgePending.delete(requestId);
-        reject(new Error('The attendance service did not respond. Check the Apps Script deployment and bridge URL, then reload.'));
-      }, 20000);
-      bridgePending.set(requestId, { resolve, reject, timer });
-      bridgeFrame.contentWindow.postMessage({
-        channel: 'QR_ATTENDANCE_REQUEST', requestId, method, args
-      }, '*');
-    });
-  }
 
-  function callServer(method, ...args) {
-    if (protectedMethods.has(method)) {
-      if (!authToken) return Promise.reject(new Error('Please log in to continue.'));
-      args.push(authToken);
-    }
-    return callBridge(method, args);
-  }
-  function setNotice(id, message, type='info') {
-    const el = document.getElementById(id);
-    el.textContent = message || '';
-    el.className = 'notice' + (message ? ' show ' + type : '');
-  }
-  function showGlobal(message, type='info') { setNotice('globalNotice', message, type); }
-  function escapeHtml(s) {
-    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  }
-  async function reloadData() {
-    if (!authToken) { showLogin(); return; }
-    try {
-      showGlobal('Loading…', 'info');
-      appData = await callServer('getAppData');
-      document.getElementById('userLabel').textContent = appData.user.email + ' · ' + appData.user.role;
-      const isAdmin = appData.user.role === 'Admin';
-      document.getElementById('studentsTab').classList.toggle('hidden', !isAdmin);
-      document.getElementById('logsTab').classList.toggle('hidden', !isAdmin);
-      document.getElementById('accountsTab').classList.toggle('hidden', !isAdmin);
-      if (isAdmin) {
-        renderStudents();
-        renderLogs(appData.recentAttendance || []);
-        await loadAccounts();
+      try {
+        scanner = new Html5Qrcode('reader');
+
+        await scanner.start(
+          { facingMode: 'environment' },
+          {
+            fps: 10,
+            qrbox: { width: 240, height: 240 },
+            aspectRatio: 1
+          },
+          async function(decodedText) {
+            if (processing) return;
+            processing = true;
+
+            try {
+              await scanner.stop();
+              scanning = false;
+
+              if (!window.opener || window.opener.closed) {
+                setStatus(
+                  'Dashboard connection not found. Open this scanner using the Open QR Scanner button on your Apps Script dashboard.'
+                );
+                return;
+              }
+
+              window.opener.postMessage(
+                {
+                  type: 'QR_ATTENDANCE_SCANNED',
+                  token: decodedText
+                },
+                'https://script.google.com'
+              );
+
+              setStatus(
+                'QR code sent to the dashboard. Check the dashboard for the student details and confirm the transaction.'
+              );
+            } catch (error) {
+              setStatus('Could not send the QR code: ' + error.message);
+            }
+          },
+          function() {
+            // Ignore individual frame decode failures.
+          }
+        );
+
+        scanning = true;
+        setStatus('Camera started. Point it at the student QR code.');
+      } catch (error) {
+        setStatus('Could not start camera: ' + error.message);
       }
-      showGlobal('', 'info');
-      showTab('scan');
-    } catch (e) {
-      showGlobal(e.message, 'err');
-      if (/log in|session|account is inactive|permissions changed/i.test(e.message)) {
-        await doLogout();
+    }
+
+    async function stopScanner() {
+      if (scanner && scanning) {
+        try {
+          await scanner.stop();
+          scanning = false;
+          setStatus('Camera stopped.');
+        } catch (error) {
+          setStatus('Could not stop camera: ' + error.message);
+        }
       }
     }
-  }
-  function showTab(tab) {
-    if (tab !== 'scan' && (!appData || appData.user.role !== 'Admin')) return;
-    ['scan','students','logs','accounts'].forEach(name => {
-      document.getElementById(name + 'Panel').classList.toggle('hidden', name !== tab);
-      const button = document.querySelector('[data-tab="' + name + '"]');
-      if (button) button.classList.toggle('active', name === tab);
-    });
-    if (tab === 'students') renderStudents();
-    if (tab === 'logs') loadLogs();
-    if (tab === 'accounts') loadAccounts();
-  }
-  function selectTransaction(value) {
-    selectedTransaction = value;
-    document.querySelectorAll('.transaction').forEach(btn => btn.classList.toggle('active', btn.dataset.value === value));
-    document.getElementById('confirmTransaction').textContent = 'Selected transaction: ' + value;
-  }
-  
-async function startScanner() {
-  if (scannerRunning) return;
-  const startBtn = document.getElementById('startBtn');
-  startBtn.disabled = true;
-  try {
-    if (!window.isSecureContext) {
-      throw new Error('Camera access requires HTTPS. Open the GitHub Pages website.');
-    }
-          // ... your existing code on lines 352-355
-      scanner = new Html5Qrcode("reader");
-      await scanner.start(
-        { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 240, height: 240 }, aspectRatio: 1.0 },
-        (decodedText) => {
-          onQrDecoded(decodedText);
-        },
-        () => {}
 
-
-      );
-    scannerRunning = true;
-    startBtn.disabled = true;
-    document.getElementById('stopBtn').disabled = false;
-    setNotice('scanNotice', 'Camera is active. Scan a student QR code.', 'info');
-  } catch (e) {
-    const message = e && e.message ? e.message : String(e);
-    if (scanner) {
-      try { if (scannerRunning) await scanner.stop(); } catch (_) {}
-      try { await scanner.clear(); } catch (_) {}
-    }
-    scanner = null;
-    scannerRunning = false;
-    startBtn.disabled = false;
-    document.getElementById('stopBtn').disabled = true;
-    if (/permission|notallowed/i.test(message)) {
-      setNotice('scanNotice', 'Camera access was denied. Allow camera access for this GitHub Pages site in Chrome settings, then reload.', 'err');
-    } else {
-      setNotice('scanNotice', 'Camera error: ' + message, 'err');
-    }
-    console.error('QR scanner startup failed:', e);
-  }
-}
-
-  async function stopScanner() {
-    if (scanner && scannerRunning) {
-      try { await scanner.stop(); await scanner.clear(); } catch (e) {}
-    }
-    scannerRunning = false;
-    scanner = null;
-    document.getElementById('startBtn').disabled = false;
-    document.getElementById('stopBtn').disabled = true;
-  }
-  let lookupBusy = false;
-  async function onQrDecoded(decodedText) {
-    if (lookupBusy || currentStudent) return;
-    lookupBusy = true;
-    currentToken = String(decodedText || '').trim();
-    try {
-      await stopScanner();
-      currentStudent = await callServer('lookupStudent', currentToken);
-      document.getElementById('studentDetails').innerHTML =
-        kv('Student ID', currentStudent.studentId) +
-        kv('Full name', currentStudent.fullName) +
-        kv('Course', currentStudent.course || '—') +
-        kv('Year level', currentStudent.yearLevel || '—') +
-        kv('Section', currentStudent.section || '—');
-      document.getElementById('confirmTransaction').textContent = 'Transaction to record: ' + selectedTransaction;
-      document.getElementById('preview').classList.add('show');
-      setNotice('scanNotice', 'Student found. Verify the details before saving.', 'ok');
-    } catch (e) {
-      currentStudent = null;
-      currentToken = '';
-      setNotice('scanNotice', e.message, 'err');
-    } finally {
-      lookupBusy = false;
-    }
-  }
-  function kv(label, value) {
-    return '<div class="kv"><span>' + escapeHtml(label) + '</span><span>' + escapeHtml(value) + '</span></div>';
-  }
-  async function confirmScan() {
-    if (!currentStudent || !currentToken) return;
-    const btn = document.getElementById('confirmBtn');
-    btn.disabled = true;
-    try {
-      const result = await callServer('confirmAttendance', {token:currentToken, transaction:selectedTransaction});
-      setNotice('scanNotice', result.message + '\n' + result.student.fullName + ' · ' + result.transaction + ' · ' + result.date + ' ' + result.time, 'ok');
-      clearPreview();
-      if (appData && appData.user.role === 'Admin') await loadLogs();
-    } catch (e) {
-      setNotice('scanNotice', e.message, 'err');
-    } finally {
-      btn.disabled = false;
-    }
-  }
-  function clearPreview() {
-    currentToken = '';
-    currentStudent = null;
-    document.getElementById('preview').classList.remove('show');
-  }
-
-  async function submitStudent(event) {
-    event.preventDefault();
-    const btn = document.getElementById('addStudentBtn');
-    btn.disabled = true;
-    try {
-      const result = await callServer('addStudent', {
-        fullName:document.getElementById('fullName').value,
-        course:document.getElementById('course').value,
-        yearLevel:document.getElementById('yearLevel').value,
-        section:document.getElementById('section').value
-      });
-      document.getElementById('studentForm').reset();
-      showGlobal('Student added: ' + result.studentId + ' — ' + result.fullName, 'ok');
-      await reloadData();
-      showTab('students');
-    } catch (e) { showGlobal(e.message, 'err'); }
-    finally { btn.disabled = false; }
-  }
-  function renderStudents() {
-    if (!appData || appData.user.role !== 'Admin') return;
-    const query = (document.getElementById('studentSearch').value || '').toLowerCase().trim();
-    const students = (appData.students || []).filter(s => [s.studentId,s.fullName,s.course,s.yearLevel,s.section].join(' ').toLowerCase().includes(query));
-    const body = document.getElementById('studentsBody');
-    if (!students.length) { body.innerHTML = '<tr><td colspan="6" class="empty">No students found.</td></tr>'; return; }
-    body.innerHTML = students.map(s => '<tr>' +
-      '<td>' + escapeHtml(s.studentId) + '</td><td>' + escapeHtml(s.fullName) + '</td>' +
-      '<td>' + escapeHtml([s.course,s.yearLevel,s.section].filter(Boolean).join(' / ') || '—') + '</td>' +
-      '<td><span class="status ' + (s.status === 'Active' ? 'Active' : 'Inactive') + '">' + escapeHtml(s.status) + '</span></td>' +
-      '<td><a href="' + escapeHtml(s.qrUrl) + '" target="_blank" rel="noopener">Open QR</a></td>' +
-      '<td><button class="' + (s.status === 'Active' ? 'danger' : 'secondary') + '" onclick="changeStatus(\'' + escapeHtml(s.studentId) + '\',\'' + (s.status === 'Active' ? 'Inactive' : 'Active') + '\')">' + (s.status === 'Active' ? 'Deactivate' : 'Activate') + '</button></td></tr>').join('');
-  }
-  async function changeStatus(id, status) {
-    if (!confirm('Set ' + id + ' to ' + status + '?')) return;
-    try { await callServer('setStudentStatus', id, status); await reloadData(); showTab('students'); showGlobal(id + ' is now ' + status + '.', 'ok'); }
-    catch(e) { showGlobal(e.message, 'err'); }
-  }
-  async function loadLogs() {
-    if (!appData || appData.user.role !== 'Admin') return;
-    try {
-      const rows = await callServer('getAttendance', {
-        date:document.getElementById('filterDate').value,
-        transaction:document.getElementById('filterTransaction').value,
-        query:document.getElementById('logSearch').value,
-        limit:2000
-      });
-      currentLogs = rows;
-      renderLogs(rows);
-    } catch(e) { showGlobal(e.message, 'err'); }
-  }
-  function renderLogs(rows) {
-    const body = document.getElementById('logsBody');
-    document.getElementById('logCount').textContent = rows.length + ' record(s) shown';
-    if (!rows.length) { body.innerHTML = '<tr><td colspan="7" class="empty">No attendance records match.</td></tr>'; return; }
-    body.innerHTML = rows.map(r => '<tr><td>' + escapeHtml(r.date) + '</td><td>' + escapeHtml(r.time) + '</td><td>' +
-      escapeHtml(r.studentId) + '</td><td>' + escapeHtml(r.fullName) + '</td><td>' + escapeHtml(r.course) +
-      '</td><td>' + escapeHtml(r.transaction) + '</td><td>' + escapeHtml(r.facilitatorEmail) + '</td></tr>').join('');
-  }
-  function clearLogFilters() {
-    document.getElementById('filterDate').value = '';
-    document.getElementById('filterTransaction').value = '';
-    document.getElementById('logSearch').value = '';
-    loadLogs();
-  }
-  async function exportCsv() {
-    try {
-      const csv = await callServer('exportAttendanceCsv', {
-        date:document.getElementById('filterDate').value,
-        transaction:document.getElementById('filterTransaction').value,
-        query:document.getElementById('logSearch').value,
-        limit:2000
-      });
-      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = 'attendance-export.csv'; a.click();
-      URL.revokeObjectURL(url);
-    } catch(e) { showGlobal(e.message, 'err'); }
-  }
-
-  async function loadAccounts() {
-    if (!appData || appData.user.role !== 'Admin') return;
-    try {
-      accountCache = await callServer('getAccounts');
-      renderAccounts();
-    } catch (e) { showGlobal(e.message, 'err'); }
-  }
-
-  function renderAccounts() {
-    const body = document.getElementById('accountsBody');
-    if (!accountCache.length) {
-      body.innerHTML = '<tr><td colspan="5" class="empty">No accounts found.</td></tr>';
-      return;
-    }
-    body.innerHTML = accountCache.map(a => {
-      const status = a.active ? 'Active' : 'Inactive';
-      return '<tr>' +
-        '<td>' + escapeHtml(a.email) + '</td>' +
-        '<td>' + escapeHtml(a.role) + '</td>' +
-        '<td><span class="status ' + status + '">' + status + '</span></td>' +
-        '<td><button class="secondary" onclick="resetAccountPin(decodeURIComponent(\'' + encodeURIComponent(a.email) + '\'))">Reset PIN</button></td>' +
-        '<td><button class="' + (a.active ? 'danger' : 'secondary') + '" onclick="toggleAccount(decodeURIComponent(\'' + encodeURIComponent(a.email) + '\'),' + (!a.active) + ')">' +
-        (a.active ? 'Deactivate' : 'Activate') + '</button></td></tr>';
-    }).join('');
-  }
-
-  async function submitAccount(event) {
-    event.preventDefault();
-    const btn = document.getElementById('createAccountBtn');
-    btn.disabled = true;
-    try {
-      const result = await callServer('createAccount',
-        document.getElementById('accountEmail').value,
-        document.getElementById('accountRole').value,
-        document.getElementById('accountPin').value);
-      document.getElementById('accountForm').reset();
-      showGlobal('Account created for ' + result.email + '.', 'ok');
-      await loadAccounts();
-    } catch (e) {
-      showGlobal(e.message, 'err');
-    } finally {
-      btn.disabled = false;
-    }
-  }
-
-  async function resetAccountPin(email) {
-    const pin = prompt('Enter a new six-digit PIN for ' + email + ':');
-    if (pin === null) return;
-    if (!/^[0-9]{6}$/.test(pin)) {
-      showGlobal('PIN must contain exactly six digits.', 'err');
-      return;
-    }
-    try {
-      await callServer('resetUserPin', email, pin);
-      showGlobal('PIN reset successfully for ' + email + '.', 'ok');
-    } catch (e) { showGlobal(e.message, 'err'); }
-  }
-
-  async function toggleAccount(email, active) {
-    const action = active ? 'activate' : 'deactivate';
-    if (!confirm('Are you sure you want to ' + action + ' ' + email + '?')) return;
-    try {
-      await callServer('setAccountStatus', email, active);
-      showGlobal(email + ' has been ' + (active ? 'activated' : 'deactivated') + '.', 'ok');
-      await loadAccounts();
-    } catch (e) { showGlobal(e.message, 'err'); }
-  }
-  function sendAttendanceToGoogleSheets(studentIdPayload) {
-    const GOOGLE_SCRIPT_API = "https://script.google.com/macros/s/AKfycbwUtMbXqVzvC5KGxosv3pOlOyiOTR-tH_AZ1vI7N83Z2l3E4MVC7u0w7GgLIUrrm6c7/exec";
-    
-    // Find your active transaction type button element state
-    const activeBtn = document.querySelector(".transaction.active");
-    const selectedTransaction = activeBtn ? activeBtn.getAttribute("data-value") : "Entrance";
-  
-    setNotice('scanNotice', 'Logging attendance data to server...', 'info');
-  
-    fetch(GOOGLE_SCRIPT_API, {
-      method: "POST",
-      mode: "cors",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8" // Bypasses explicit CORS pre-flight checks in browser
-      },
-      body: JSON.stringify({
-        studentId: studentIdPayload,
-        transactionType: selectedTransaction
-      })
-    })
-    .then(response => response.json())
-    .then(data => {
-      setNotice('scanNotice', 'Attendance logged successfully for: ' + studentIdPayload, 'ok');
-    })
-    .catch(error => {
-      console.error("API error:", error);
-      setNotice('scanNotice', 'Network breakdown: Failed to save entry to database.', 'err');
-    });
-  }
-
-</script>
+    document.getElementById('startBtn').addEventListener('click', startScanner);
+    document.getElementById('stopBtn').addEventListener('click', stopScanner);
+  </script>
 </body>
 </html>
