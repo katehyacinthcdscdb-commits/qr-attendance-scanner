@@ -80,6 +80,7 @@
             if (processing) return;
             processing = true;
             console.log('QR CALLBACK FIRED:', decodedText);
+            console.log('QR OPENER CHECK:', !!window.opener, window.opener?.closed);
 
             try {
               await scanner.stop();
