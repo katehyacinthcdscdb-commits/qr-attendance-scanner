@@ -79,6 +79,7 @@
           async function(decodedText) {
             if (processing) return;
             processing = true;
+            console.log('QR CALLBACK FIRED:', decodedText);
 
             try {
               await scanner.stop();
